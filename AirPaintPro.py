@@ -11,12 +11,12 @@ for cam_id in [0, 1, 2]:
         ret, test_frame = temp_cap.read()
         if ret:
             cap = temp_cap
-            print(f"[OK] Камера подключена: ID {cam_id}")
+            print(f"[OK] Camera connected: ID {cam_id}")
             break
         temp_cap.release()
 
 if cap is None:
-    print("[ОШИБКА] Камера не найдена!")
+    print("[ERROR] camera doesn't exist!")
     exit()
 
 cap.set(3, 1280)
@@ -31,15 +31,15 @@ SMOOTH_FACTOR = 0.65
 
 # 9 цветов в палитре (BGR)
 palette = [
-    ("Зеленый", (0, 255, 0)),
-    ("Бирюзовый", (255, 255, 0)),
-    ("Синий", (255, 0, 0)),
-    ("Фиолетовый", (255, 0, 128)),
-    ("Красный", (0, 0, 255)),
-    ("Оранжевый", (0, 140, 255)),
-    ("Желтый", (0, 255, 255)),
-    ("Белый", (255, 255, 255)),
-    ("Черный", (15, 15, 15))
+    ("Green", (0, 255, 0)),
+    ("Cyan", (255, 255, 0)),
+    ("Blue", (255, 0, 0)),
+    ("Purple", (255, 0, 128)),
+    ("Red", (0, 0, 255)),
+    ("Orange", (0, 140, 255)),
+    ("Yellow", (0, 255, 255)),
+    ("White", (255, 255, 255)),
+    ("Black", (15, 15, 15))
 ]
 
 color_idx = 0
@@ -88,9 +88,7 @@ while cap.isOpened():
             dist_pinch = np.hypot(raw_tx - raw_ix, raw_ty - raw_iy)
             is_ok_gesture = (dist_pinch < 38)
 
-            # ==============================================================
             # ПРИОРИТЕТ 1: ЖЕСТ «ОК» (ТОЛЬКО СМЕНА ЦВЕТА, РИСОВАНИЕ ЗАПРЕЩЕНО)
-            # ==============================================================
             if is_ok_gesture:
                 pinch_detected_this_frame = True
                 cx_p, cy_p = (raw_tx + raw_ix) // 2, (raw_ty + raw_iy) // 2
@@ -107,9 +105,7 @@ while cap.isOpened():
                     pinch_locked = True
                 continue  # ПРЕПЯТСТВУЕТ рисованию этой рукой!
 
-            # ==============================================================
             # ПРИОРИТЕТ 2: ВЗАИМОДЕЙСТВИЕ С КНОПКАМИ S/M/L И CLEAR
-            # ==============================================================
             # Кнопки размеров (S, M, L)
             for i, (s_name, s_val) in enumerate(sizes):
                 sy1 = 40 + i * 75
@@ -132,14 +128,12 @@ while cap.isOpened():
                     canvas = np.zeros_like(frame)
                     clear_btn_timer = 0
 
-            # ==============================================================
             # ПРИОРИТЕТ 3: РИСОВАНИЕ (1 ПАЛЕЦ) ИЛИ ЛАСТИК (2 ПАЛЬЦА)
-            # ==============================================================
             # Точная проверка поднятия пальцев относительно суставов PIP
             index_up = lmList[8][1] < lmList[6][1]
             middle_up = lmList[12][1] < lmList[10][1]
 
-            # Игнорируем область бокового меню при рисовании
+            #Игнорируем область бокового меню при рисовании
             if raw_ix > 140:
                 # Фильтр сглаживания
                 if smooth_x == 0 and smooth_y == 0:
@@ -150,7 +144,7 @@ while cap.isOpened():
                         smooth_x = int(smooth_x * (1 - SMOOTH_FACTOR) + raw_ix * SMOOTH_FACTOR)
                         smooth_y = int(smooth_y * (1 - SMOOTH_FACTOR) + raw_iy * SMOOTH_FACTOR)
 
-                # --- ЛАСТИК (Подняты указательный + средний) ---
+                #ЛАСТИК (Подняты указательный + средний)
                 if index_up and middle_up:
                     drawing_active = True
                     eraser_x = (smooth_x + raw_mx) // 2
@@ -165,7 +159,7 @@ while cap.isOpened():
                         cv2.line(canvas, (prev_x, prev_y), (eraser_x, eraser_y), (0, 0, 0), eraser_thickness)
                     prev_x, prev_y = eraser_x, eraser_y
 
-                # --- РИСОВАНИЕ (Поднят только указательный) ---
+                #РИСОВАНИЕ (Поднят только указательный)
                 elif index_up and not middle_up:
                     drawing_active = True
 
@@ -197,7 +191,7 @@ while cap.isOpened():
     frame = cv2.bitwise_and(frame, img_inv)
     frame = cv2.bitwise_or(frame, canvas)
 
-    # ------------------ РЕНДЕР ИНТЕРФЕЙСА (UI) ------------------
+    #  РЕНДЕР ИНТЕРФЕЙСА (UI)
     # Кнопки размеров (S / M / L) слева
     for i, (s_name, s_val) in enumerate(sizes):
         sy1 = 40 + i * 75
