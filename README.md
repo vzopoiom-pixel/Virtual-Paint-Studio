@@ -55,5 +55,4 @@ The app includes 9 vibrant BGR colors:
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/AirPaint-Pro.git
-cd AirPaint-Pro
+git clone https://github.com/vzopoiom-pixel/Virtual-Paint-Studio.git
